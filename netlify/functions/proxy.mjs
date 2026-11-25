@@ -30,22 +30,23 @@ export default async (req, context) => {
   var target = UPSTREAM + path + url.search;
 
   try {
-    var init = { method: req.method, headers: {} };
-    var ct = req.headers.get("content-type");
-    if (ct) init.headers["Content-Type"] = ct;
+    var body = null;
     if (req.method === "POST" || req.method === "PUT") {
-      init.body = req.body;
+      body = await req.text();
     }
 
-    var upstream = await fetch(target, init);
-    var body = await upstream.text();
+    var upstream = await fetch(target, {
+      method: req.method,
+      headers: body ? { "Content-Type": "application/json" } : {},
+      body: body,
+    });
 
     var respHeaders = Object.assign({}, cors);
     var upCt = upstream.headers.get("content-type");
     if (upCt) respHeaders["Content-Type"] = upCt;
     respHeaders["Cache-Control"] = "no-store";
 
-    return new Response(body, {
+    return new Response(upstream.body, {
       status: upstream.status,
       headers: respHeaders,
     });
