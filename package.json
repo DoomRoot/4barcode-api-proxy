@@ -1,0 +1,5 @@
+{
+  "name": "4barcode-api-proxy",
+  "private": true,
+  "engines": { "node": ">=18" }
+}
