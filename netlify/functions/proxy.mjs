@@ -34,17 +34,18 @@ export default async (req, context) => {
     var ct = req.headers.get("content-type");
     if (ct) init.headers["Content-Type"] = ct;
     if (req.method === "POST" || req.method === "PUT") {
-      init.body = await req.arrayBuffer();
+      init.body = req.body;
     }
 
     var upstream = await fetch(target, init);
+    var body = await upstream.text();
 
     var respHeaders = Object.assign({}, cors);
     var upCt = upstream.headers.get("content-type");
     if (upCt) respHeaders["Content-Type"] = upCt;
     respHeaders["Cache-Control"] = "no-store";
 
-    return new Response(upstream.body, {
+    return new Response(body, {
       status: upstream.status,
       headers: respHeaders,
     });
@@ -54,8 +55,4 @@ export default async (req, context) => {
       headers: Object.assign({ "Content-Type": "text/plain" }, cors),
     });
   }
-};
-
-export const config = {
-  path: "/*",
 };
